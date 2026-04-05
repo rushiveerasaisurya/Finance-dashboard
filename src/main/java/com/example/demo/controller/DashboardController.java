@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.DashboardSummary;
 import com.example.demo.service.DashboardService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,8 +19,12 @@ public class DashboardController {
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<DashboardSummary> getSummary() {
-        DashboardSummary summary = dashboardService.getSummary();
+    public ResponseEntity<DashboardSummary> getSummary(Authentication authentication) {
+        String username = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        DashboardSummary summary = dashboardService.getSummary(isAdmin ? null : username);
         return ResponseEntity.ok(summary);
     }
 }

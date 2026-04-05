@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/api/records")
@@ -34,20 +38,24 @@ public class FinancialRecordController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RecordResponse>> getRecords(
+    public ResponseEntity<Page<RecordResponse>> getRecords(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             Authentication authentication) {
 
         String username = authentication.getName();
 
-        boolean canViewAll = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST"));
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        List<RecordResponse> records = recordService.getFilteredRecords(
-                canViewAll ? null : username, startDate, endDate, category, type);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("transactionDate").descending());
+
+        Page<RecordResponse> records = recordService.getFilteredRecords(
+                isAdmin ? null : username, startDate, endDate, category, type, pageable);
 
         return ResponseEntity.ok(records);
     }
@@ -55,10 +63,10 @@ public class FinancialRecordController {
     @GetMapping("/{id}")
     public ResponseEntity<RecordResponse> getRecordById(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
-        boolean hasAccessLevel = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST"));
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        RecordResponse record = recordService.getRecordById(id, hasAccessLevel ? null : username);
+        RecordResponse record = recordService.getRecordById(id, isAdmin ? null : username);
         return ResponseEntity.ok(record);
     }
 

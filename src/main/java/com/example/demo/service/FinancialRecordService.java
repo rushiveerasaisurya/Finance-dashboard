@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @SuppressWarnings("null")
@@ -71,7 +73,7 @@ public class FinancialRecordService {
                 .collect(Collectors.toList());
     }
 
-    public List<RecordResponse> getFilteredRecords(String username, LocalDate startDate, LocalDate endDate, String category, String typeStr) {
+    public Page<RecordResponse> getFilteredRecords(String username, LocalDate startDate, LocalDate endDate, String category, String typeStr, Pageable pageable) {
         Specification<FinancialRecord> spec = Specification.where(null);
         
         if (username != null) {
@@ -101,10 +103,8 @@ public class FinancialRecordService {
             }
         }
 
-        return recordRepository.findAll(spec)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return recordRepository.findAll(spec, pageable)
+                .map(this::toResponse);
     }
 
     public RecordResponse getRecordById(Long id, String username) {
