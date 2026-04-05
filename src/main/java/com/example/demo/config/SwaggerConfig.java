@@ -8,14 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@OpenAPIDefinition(
-        info = @Info(title = "Finance Dashboard API", version = "1.0"),
-        security = @SecurityRequirement(name = "basicAuth")
-)
-@SecurityScheme(
-        name = "basicAuth",
-        type = SecuritySchemeType.HTTP,
-        scheme = "basic"
-)
+@OpenAPIDefinition(info = @Info(title = "Finance Dashboard API", version = "1.0"), security = @SecurityRequirement(name = "bearerAuth"))
+@SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
 public class SwaggerConfig {
 }
