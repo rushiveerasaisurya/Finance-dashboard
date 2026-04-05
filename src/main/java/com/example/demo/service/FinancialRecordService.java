@@ -107,16 +107,25 @@ public class FinancialRecordService {
                 .collect(Collectors.toList());
     }
 
-    public RecordResponse getRecordById(Long id) {
+    public RecordResponse getRecordById(Long id, String username) {
         FinancialRecord record = recordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Record not found with id: " + id));
+        
+        if (username != null && !record.getUser().getUsername().equals(username)) {
+            throw new RuntimeException("Access Denied: You do not have permission to view this record");
+        }
+
         return toResponse(record);
     }
 
-    public RecordResponse updateRecord(Long id, RecordRequest request) {
+    public RecordResponse updateRecord(Long id, RecordRequest request, String allowedUsername) {
 
         FinancialRecord record = recordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Record not found with id: " + id));
+
+        if (allowedUsername != null && !record.getUser().getUsername().equals(allowedUsername)) {
+            throw new RuntimeException("Access Denied: You can only edit your own records");
+        }
 
         TransactionType type;
         try {

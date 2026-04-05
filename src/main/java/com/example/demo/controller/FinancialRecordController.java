@@ -43,27 +43,36 @@ public class FinancialRecordController {
 
         String username = authentication.getName();
 
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean canViewAll = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST"));
 
         List<RecordResponse> records = recordService.getFilteredRecords(
-                isAdmin ? null : username, startDate, endDate, category, type);
+                canViewAll ? null : username, startDate, endDate, category, type);
 
         return ResponseEntity.ok(records);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RecordResponse> getRecordById(@PathVariable Long id) {
-        RecordResponse record = recordService.getRecordById(id);
+    public ResponseEntity<RecordResponse> getRecordById(@PathVariable Long id, Authentication authentication) {
+        String username = authentication.getName();
+        boolean hasAccessLevel = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST"));
+
+        RecordResponse record = recordService.getRecordById(id, hasAccessLevel ? null : username);
         return ResponseEntity.ok(record);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<RecordResponse> updateRecord(
             @PathVariable Long id,
-            @Valid @RequestBody RecordRequest request) {
+            @Valid @RequestBody RecordRequest request,
+            Authentication authentication) {
 
-        RecordResponse updated = recordService.updateRecord(id, request);
+        String username = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        RecordResponse updated = recordService.updateRecord(id, request, isAdmin ? null : username);
         return ResponseEntity.ok(updated);
     }
 
