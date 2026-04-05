@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,13 +48,13 @@ public class FinancialRecordController {
 
         String username = authentication.getName();
 
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean canViewAll = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("transactionDate").descending());
 
         Page<RecordResponse> records = recordService.getFilteredRecords(
-                isAdmin ? null : username, startDate, endDate, category, type, pageable);
+                canViewAll ? null : username, startDate, endDate, category, type, pageable);
 
         return ResponseEntity.ok(records);
     }
@@ -63,10 +62,10 @@ public class FinancialRecordController {
     @GetMapping("/{id}")
     public ResponseEntity<RecordResponse> getRecordById(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean canViewAll = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST"));
 
-        RecordResponse record = recordService.getRecordById(id, isAdmin ? null : username);
+        RecordResponse record = recordService.getRecordById(id, canViewAll ? null : username);
         return ResponseEntity.ok(record);
     }
 

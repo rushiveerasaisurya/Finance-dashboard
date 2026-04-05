@@ -21,10 +21,10 @@ public class DashboardController {
     @GetMapping("/summary")
     public ResponseEntity<DashboardSummary> getSummary(Authentication authentication) {
         String username = authentication.getName();
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean canViewAll = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST"));
 
-        DashboardSummary summary = dashboardService.getSummary(isAdmin ? null : username);
+        DashboardSummary summary = dashboardService.getSummary(canViewAll ? null : username);
         return ResponseEntity.ok(summary);
     }
 }
