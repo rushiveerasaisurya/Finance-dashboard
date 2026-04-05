@@ -2,6 +2,7 @@
 
 This is a robust and secure Spring Boot backend for a Finance Dashboard system. It handles user management, role-based access control (RBAC), and financial record processing with insights/summaries.
 
+🎯 **Live API Demo**: [https://finance-dashboard-1zdt.onrender.com/](https://finance-dashboard-1zdt.onrender.com/)
 ## 🚀 Tech Stack
 - **Language**: Java 21
 - **Framework**: Spring Boot 3.4.x
