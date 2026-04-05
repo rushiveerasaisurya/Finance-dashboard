@@ -16,9 +16,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // Using a securely generated key for HS256
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long jwtExpiration = 86400000; // 24 hours in milliseconds
+    private final long jwtExpiration = 86400000;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -43,7 +42,6 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        // Add roles to token if needed
         claims.put("roles", userDetails.getAuthorities());
         return createToken(claims, userDetails.getUsername());
     }
