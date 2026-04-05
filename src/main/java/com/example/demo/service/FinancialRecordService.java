@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class FinancialRecordService {
 
     private final FinancialRecordRepository recordRepository;
@@ -51,9 +52,6 @@ public class FinancialRecordService {
         return toResponse(saved);
     }
 
-    /**
-     * Get ALL records (Admin only — enforced by the controller).
-     */
     public List<RecordResponse> getAllRecords() {
         return recordRepository.findAll()
                 .stream()
@@ -61,9 +59,6 @@ public class FinancialRecordService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get only the records belonging to a specific user.
-     */
     public List<RecordResponse> getRecordsByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
@@ -74,25 +69,17 @@ public class FinancialRecordService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get a single record by ID.
-     */
     public RecordResponse getRecordById(Long id) {
         FinancialRecord record = recordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Record not found with id: " + id));
         return toResponse(record);
     }
 
-    /**
-     * Update an existing record.
-     */
     public RecordResponse updateRecord(Long id, RecordRequest request) {
 
-        // Find the existing record
         FinancialRecord record = recordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Record not found with id: " + id));
 
-        // Convert the type string
         TransactionType type;
         try {
             type = TransactionType.valueOf(request.getType().toUpperCase());
@@ -100,22 +87,17 @@ public class FinancialRecordService {
             throw new RuntimeException("Invalid type: " + request.getType() + ". Must be INCOME or EXPENSE");
         }
 
-        // Update the fields
         record.setType(type);
         record.setAmount(request.getAmount());
         record.setCategory(request.getCategory());
         record.setDescription(request.getDescription());
         record.setTransactionDate(request.getTransactionDate());
 
-        // Save the updated record
         FinancialRecord updated = recordRepository.save(record);
 
         return toResponse(updated);
     }
 
-    /**
-     * Delete a record (Admin only — enforced by security config).
-     */
     public void deleteRecord(Long id) {
         if (!recordRepository.existsById(id)) {
             throw new ResourceNotFoundException("Record not found with id: " + id);
@@ -123,7 +105,6 @@ public class FinancialRecordService {
         recordRepository.deleteById(id);
     }
 
-    // ── Helper: converts FinancialRecord entity → RecordResponse DTO ─────────
     private RecordResponse toResponse(FinancialRecord record) {
         return new RecordResponse(
                 record.getId(),

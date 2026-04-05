@@ -40,7 +40,7 @@ public class UserController {
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<UserResponse> updateUserStatus(
-            @PathVariable Long id, 
+            @PathVariable Long id,
             @RequestParam boolean enabled) {
         UserResponse updated = userService.updateUserStatus(id, enabled);
         return ResponseEntity.ok(updated);
@@ -48,7 +48,7 @@ public class UserController {
 
     @PatchMapping("/{id}/role")
     public ResponseEntity<UserResponse> updateUserRole(
-            @PathVariable Long id, 
+            @PathVariable Long id,
             @RequestParam String role) {
         UserResponse updated = userService.updateUserRole(id, role);
         return ResponseEntity.ok(updated);

@@ -18,6 +18,7 @@ import java.time.LocalDate;
 public class DataSeeder {
 
         @Bean
+        @SuppressWarnings("null")
         public CommandLineRunner loadData(UserRepository userRepository,
                         FinancialRecordRepository recordRepository,
                         PasswordEncoder passwordEncoder) {
