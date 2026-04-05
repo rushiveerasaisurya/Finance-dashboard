@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -32,19 +34,20 @@ public class FinancialRecordController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RecordResponse>> getRecords(Authentication authentication) {
+    public ResponseEntity<List<RecordResponse>> getRecords(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String type,
+            Authentication authentication) {
 
         String username = authentication.getName();
 
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        List<RecordResponse> records;
-        if (isAdmin) {
-            records = recordService.getAllRecords();
-        } else {
-            records = recordService.getRecordsByUsername(username);
-        }
+        List<RecordResponse> records = recordService.getFilteredRecords(
+                isAdmin ? null : username, startDate, endDate, category, type);
 
         return ResponseEntity.ok(records);
     }

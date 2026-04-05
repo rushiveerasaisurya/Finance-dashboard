@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 @SuppressWarnings("null")
@@ -64,6 +66,42 @@ public class FinancialRecordService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         return recordRepository.findByUserId(user.getId())
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<RecordResponse> getFilteredRecords(String username, LocalDate startDate, LocalDate endDate, String category, String typeStr) {
+        Specification<FinancialRecord> spec = Specification.where(null);
+        
+        if (username != null) {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("user").get("id"), user.getId()));
+        }
+        
+        if (startDate != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("transactionDate"), startDate));
+        }
+        
+        if (endDate != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("transactionDate"), endDate));
+        }
+        
+        if (category != null && !category.trim().isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("category"), category));
+        }
+        
+        if (typeStr != null && !typeStr.trim().isEmpty()) {
+            try {
+                TransactionType type = TransactionType.valueOf(typeStr.toUpperCase());
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("type"), type));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid type filter: " + typeStr + ". Must be INCOME or EXPENSE");
+            }
+        }
+
+        return recordRepository.findAll(spec)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
