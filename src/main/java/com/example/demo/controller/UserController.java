@@ -37,4 +37,20 @@ public class UserController {
         UserResponse created = userService.createUser(request);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<UserResponse> updateUserStatus(
+            @PathVariable Long id, 
+            @RequestParam boolean enabled) {
+        UserResponse updated = userService.updateUserStatus(id, enabled);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PatchMapping("/{id}/role")
+    public ResponseEntity<UserResponse> updateUserRole(
+            @PathVariable Long id, 
+            @RequestParam String role) {
+        UserResponse updated = userService.updateUserRole(id, role);
+        return ResponseEntity.ok(updated);
+    }
 }
